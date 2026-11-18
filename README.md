@@ -1,19 +1,23 @@
 # 1minVideo
 
-用真实产品截图制作可复剪的短教程。代码控制取景、气泡入场和切镜，画面、字幕、配音分别导出；无需录浏览器，也不需要云端服务。
+把一组图片变成一条讲得清楚的**科普片或教程**。图可以是实验照片、原理示意图、数据图表、实物操作图，也可以是软件截图。助手负责看图、选主线和写旁白，Python 与 FFmpeg 负责构图、定时、切镜和导出。
 
-仓库内的 [screenshot-to-video Skill](skills/screenshot-to-video/SKILL.md) 可独立使用。将整个 `skills/screenshot-to-video` 目录放入 Codex 的个人 skills 目录后，可用 `$screenshot-to-video` 调用；也可以直接运行脚本。
+将 [image-to-video](skills/image-to-video/SKILL.md) 目录放入个人 Skills 目录后，可以直接说：**“用 $image-to-video，把这几张实验图做成一条 40 秒的竖屏科普，给没学过物理的人看。”** 也可以说：“用这组操作截图做一个横屏教程，保留真实按钮，暂时不要语音。”用户不需要写分镜 JSON。
+
+**完整工作流**：读图建索引 → 判断科普或教程 → 围绕一个问题编排镜头、标记证据 → 编译画面与时长 → 渲染无声母版、外置字幕、旁白稿 → 按需加独立配音 → 复查编码后的成片。见[双模式分镜示例](skills/image-to-video/references/story.md)及[代码剪辑手册](skills/image-to-video/references/editing.md)。
 
 **两张图试跑**（Python 3.10+、Pillow、带 libx264 的 FFmpeg）：
 
 ```sh
 python3 -m pip install Pillow
-cd skills/screenshot-to-video
+cd skills/image-to-video
 python3 scripts/demo.py /tmp/one-minute-demo
 python3 scripts/cut.py render /tmp/one-minute-demo/plan.json /tmp/one-minute-demo/export
 ```
 
 输出无声母版 `picture.mp4` 和外置 `captions.srt`、`captions.vtt`、`narration.txt`；示例使用现场生成的几何测试图，不是产品操作的替身。设置 `FFMPEG` 环境变量可指定编码器。真实项目的截图、语音和成片不包含在仓库中。
+
+**跑一个不含任何聊天界面的科普片**：在同一目录运行 `python3 scripts/science_demo.py /tmp/shadow-demo`。脚本生成三张基于几何关系的投影示意图，剪成 12 秒对比短片，结果在 `/tmp/shadow-demo/project/export`。这是示意图，不是实测数据。
 
 ### 第一条片子的复盘
 
