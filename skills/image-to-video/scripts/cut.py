@@ -97,7 +97,7 @@ def stamp(frame, fps):
 def render(plan, out):
     p, images = load(plan)
     out.mkdir(parents=True,exist_ok=True)
-    names = ["picture.mp4","captions.srt","captions.vtt","narration.txt","timing.json"]
+    names = ["picture.mp4","captions.srt","captions.vtt","narration.txt","timing.json","narration-clean.txt"]
     if any((out/name).exists() for name in names):
         raise FileExistsError("use a new output directory")
     w,h = p["size"]; fps=p["fps"]
@@ -118,13 +118,15 @@ def render(plan, out):
                     srt.append(f"{len(srt)+1}\n{span.replace('.',',')}\n{caption}\n")
                     vtt.append(f"{span}\n{caption}\n")
                 voice.append(f"{span}\n{words}\n")
-                timeline.append({"start_frame":clock,"end_frame":clock+n,"voice":words,"caption":caption})
+                timeline.append({"start_frame":clock,"end_frame":clock+n,"voice":words,"caption":caption,
+                                 "visual":shot.get("evidence","")})
                 clock+=n
             proc.stdin.close()
             if proc.wait(): raise RuntimeError("FFmpeg render failed")
         for name,rows in zip(names[1:4],(srt,vtt,voice)):
             (dest/name).write_text("\n".join(rows)+"\n",encoding="utf-8")
-        (dest/names[-1]).write_text(json.dumps({"fps":fps,"frames":clock,"cues":timeline},ensure_ascii=False,indent=2),encoding="utf-8")
+        (dest/"timing.json").write_text(json.dumps({"fps":fps,"frames":clock,"cues":timeline},ensure_ascii=False,indent=2),encoding="utf-8")
+        (dest/"narration-clean.txt").write_text("\n\n".join(c["voice"] for c in timeline if c["voice"].strip())+"\n",encoding="utf-8")
         for name in names:(dest/name).rename(out/name)
 
 
